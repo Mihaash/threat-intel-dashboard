@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- <meta http-equiv="refresh" content="60"> -->
+<title>Threat Intel Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+body {
+    background-color: #0f0f0f;
+    color: #00ff9f;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 0;
+    background-image: 
+        radial-gradient(circle at 50% 50%, rgba(0, 255, 159, 0.05) 1px, transparent 1px),
+        radial-gradient(circle at 25% 25%, rgba(0, 255, 159, 0.05) 1px, transparent 1px),
+        radial-gradient(circle at 75% 75%, rgba(0, 255, 159, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px, 40px 40px;
+}
+
+header {
+    padding: 20px;
+    text-align: center;
+    background: linear-gradient(to right, #0fffc1, #0acffe);
+    color: #000;
+    font-size: 2em;
+    font-weight: bold;
+    box-shadow: 0 0 10px #00ffcc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-icon {
+    font-size: 1.2em;
+    animation: pulse 2s infinite;
+}
+
+.dashboard-controls {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background-color: rgba(0, 255, 159, 0.05);
+    border-bottom: 1px solid rgba(0, 255, 159, 0.2);
+    font-size: 0.9em;
+    align-items: center;
+}
+
+.threat-level {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.threat-level-badge {
+    background-color: #ff3e3e;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    animation: blink 2s infinite;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+}
+
+.dashboard {
+    padding: 20px;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #00ff9f;
+    display: inline-block;
+    margin-right: 8px;
+    box-shadow: 0 0 8px #00ff9f;
+    animation: pulse 2s infinite;
+    vertical-align: middle;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 0 15px rgba(0, 255, 159, 0.1);
+    border: 1px solid rgba(0, 255, 159, 0.2);
+    table-layout: fixed;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 255, 159, 0.2);
+    vertical-align: middle;
+}
+
+th {
+    background-color: #111;
+    color: #00ffcc;
+    position: relative;
+}
+
+th:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, #00ffcc, transparent);
+}
+
+tr {
+    transition: all 0.3s ease;
+}
+
+tr:hover {
+    background-color: rgba(0, 255, 159, 0.05);
+    transform: translateX(5px);
+}
+
+.url-cell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 40%;
+}
+
+.phish-id {
+    color: rgba(0, 255, 159, 0.7);
+    font-size: 0.9em;
+    width: 20%;
+}
+
+.status {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-online {
+    color: #0f0;
+    background-color: rgba(0, 51, 0, 0.7);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    animation: blink 1.5s infinite;
+}
+
+.status-offline {
+    color: #f55;
+    background-color: rgba(51, 0, 0, 0.7);
+    border: 1px solid rgba(255, 85, 85, 0.3);
+}
+
+.target-badge {
+    background-color: rgba(0, 51, 51, 0.7);
+    color: #00ffcc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    border: 1px solid rgba(0, 255, 204, 0.3);
+    display: inline-block;
+    text-align: center;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+.current_time {
+    display: flex;
+    align-items: center;
+}
+
+.threat-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timestamp-bar {
+    color: #00ff9f;
+    font-family: monospace;
+    margin: 0;
+    text-align: left;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.control-wrapper {
+    display: flex;
+    padding: 15px 20px;
+    align-items: center;
+}
+
+form {
+    margin: 10px 20px 0;
+    text-align: right;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.typing-effect:after {
+    content: '|';
+    animation: typing 1.2s infinite;
+}
+
+@keyframes typing {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+<header>
+    <i class="fas fa-shield-alt header-icon"></i>
+    Threat Intelligence Feed
+</header>
+
+<div class="dashboard-controls">
+    <div class="current_time">
+        <div class="status-indicator"></div>
+        Current Time: <span id="current-time" class="typing-effect">ACTIVE</span>
+    </div>
+    <div class="threat-type">
+        <span>Threat type:</span>
+        <span class="threat-level-badge">URLs</span>
+    </div>
+</div>
+
+<div class="control-wrapper">
+    <div id="last-updated" class="timestamp-bar">
+        <div class="status-indicator"></div>
+        Last updated: <span id="timestamp">--:--:--</span>
+    </div>
+</div>
+  
+<div class="dashboard fade-in">
+    <table>
+        <thead>
+            <tr>
+                <th>Malicious URL</th>
+                <th>Threat ID</th>
+                <th>Status</th>
+                <th>Threat</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in threats %}
+            <tr>
+                <td class="url-cell">{{ row[0] }}</td>
+                <td class="phish-id">{{ row[1] }}</td>
+                <td>
+                    {% if row[2] == "online" %}
+                    <span class="status status-online"><i class="fas fa-exclamation-circle"></i>Active</span>
+                    {% else %}
+                    <span class="status status-offline"><i class="fas fa-ban"></i>Inactive</span>
+                    {% endif %}
+                </td>
+                <td><span class="target-badge">{{ row[3] }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function updateTime() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+</script>
+
+<!-- Autorefreshing the table every minute -->
+<script>
+    function refreshTable() {
+        fetch('/refresh-table')
+            .then(response => response.text())
+            .then(html => {
+                document.querySelector("tbody").innerHTML = html;
+                const now = new Date();
+                const formatted = now.toLocaleTimeString();
+                document.getElementById("timestamp").textContent = formatted;
+            })
+            .catch(err => console.error("Refresh failed:", err));
+    }
+
+    setInterval(refreshTable, 30000);
+
+    refreshTable();
+</script>
+
+</body>
+</html>
